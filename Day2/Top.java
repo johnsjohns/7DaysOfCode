@@ -5,23 +5,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class Top {
     public static void main(String[] args) {
-        Top top = new Top();
-        String json = top.pegaJson();
-        String movieArray[] = top.parseJsonMovies(json);
-        for(String filme: movieArray){
-            System.out.println("Filme: "+filme);
-        }
-
+        String json = pegaJson();
+        String movieArray[] = parseJsonMovies(json);
+        List<String> title = parseTitles(movieArray);
+       
+        title.forEach(System.out::println);
 
     }
 
-    public String pegaJson() {
+    static private String pegaJson() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = null;
         try {
@@ -37,13 +33,30 @@ public class Top {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(response.body());
         return response.body();
     }
 
-    public String[] parseJsonMovies(String json){
+    static private String[] parseJsonMovies(String json){
         String[] item = json.split("\\[|\\]");
-        String filmes[] = item[1].split("\\{");
+        String filmes[] = item[1].split("\\},\\{");
         return filmes;
+    }
+
+    private static List<String> parseTitles(String[] moviesArray) {
+		return parseAttribute(moviesArray, 3);
+	}
+	
+	private static List<String> parseUrlImages(String[] moviesArray) {
+		return parseAttribute(moviesArray, 5);
+	}
+	
+	private static List<String> parseAttribute(String[] moviesArray, int pos) {
+        List<String> atributo = new ArrayList<String>();
+		for (String movie : moviesArray) {
+            String itens[] = movie.split(",") ;
+             String[] item = itens[pos].split(":");
+             if(item.length > 1) atributo.add(item[1].replace("\"","" ));
+            }
+        return atributo;	
     }
 }
